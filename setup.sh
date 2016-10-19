@@ -11,6 +11,9 @@ set_sshd_option() {
 	if ! grep -q ^$key $file; then
 		echo >>$file
 		echo "$key $value" >>$file
+	elif [ "$OSVER" = "netbsd-6" ]; then
+		sed -e "s/^\($key\)[ ].*/\\1 $value/" $file >$file.$$
+		cat $file.$$ >$file
 	else
 		sed -i -e "s/^\($key\)[ ].*/\\1 $value/" $file
 	fi
@@ -37,8 +40,16 @@ elif [ "$USE_PASSWORD_AUTHENTICATION" = "enable" ]; then
 	set_sshd_option $file PasswordAuthentication yes
 fi
 
-if [ "$OSTYPE" = "debian" ]; then
-	service ssh reload
-else
-	service sshd reload
-fi
+case "$OSTYPE" in
+	debian)
+		service ssh reload
+		;;
+	redhat)
+		service sshd reload
+		;;
+	netbsd)
+		/etc/rc.d/sshd restart
+		;;
+	*)
+		;;
+esac
