@@ -11,7 +11,7 @@ set_sshd_option() {
 	if ! grep -q ^$key $file; then
 		echo >>$file
 		echo "$key $value" >>$file
-	elif [ "$OSVER" = "netbsd-6" ]; then
+	elif [ "$OSTYPE" = "freebsd" ] || [ "$OSVER" = "netbsd-6" ]; then
 		sed -e "s/^\($key\)[ ].*/\\1 $value/" $file >$file.$$
 		cat $file.$$ >$file
 	else
@@ -47,7 +47,7 @@ case "$OSTYPE" in
 	redhat)
 		service sshd reload
 		;;
-	netbsd)
+	freebsd | netbsd)
 		/etc/rc.d/sshd restart
 		;;
 	*)
