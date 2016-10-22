@@ -44,7 +44,7 @@ case "$OSTYPE" in
 	debian)
 		service ssh reload
 		;;
-	redhat)
+	redhat | suse)
 		service sshd reload
 		;;
 	freebsd | netbsd)
