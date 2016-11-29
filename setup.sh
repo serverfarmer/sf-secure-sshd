@@ -21,18 +21,35 @@ set_sshd_option() {
 
 
 echo "setting up secure sshd configuration"
+chmod 0700 /root/.ssh
+
 file="/etc/ssh/sshd_config"
 save_original_config $file
 
 set_sshd_option $file Protocol 2
-set_sshd_option $file UsePrivilegeSeparation yes
+set_sshd_option $file MaxAuthTries 1
+set_sshd_option $file MaxSessions 2
+set_sshd_option $file LoginGraceTime 60
+set_sshd_option $file ClientAliveCountMax 2
+set_sshd_option $file ClientAliveInterval 60
 set_sshd_option $file HostbasedAuthentication no
 set_sshd_option $file PubkeyAuthentication yes
 set_sshd_option $file PermitEmptyPasswords no
 set_sshd_option $file PermitRootLogin without-password
 set_sshd_option $file StrictModes yes
+set_sshd_option $file UseDNS no
+set_sshd_option $file Compression no
 set_sshd_option $file X11Forwarding no
-set_sshd_option $file TCPKeepAlive yes
+set_sshd_option $file TCPKeepAlive no
+set_sshd_option $file LogLevel INFO
+
+if grep -qFx $OSVER /opt/farm/ext/secure-sshd/config/nosandbox.conf; then
+	set_sshd_option $file UsePrivilegeSeparation yes
+elif [ "$OSTYPE" != "debian" ] && [ "$OSTYPE" != "netbsd" ]; then
+	set_sshd_option $file UsePrivilegeSeparation yes
+else
+	set_sshd_option $file UsePrivilegeSeparation sandbox
+fi
 
 if [ "$USE_PASSWORD_AUTHENTICATION" = "disable" ]; then
 	set_sshd_option $file PasswordAuthentication no
