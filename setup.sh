@@ -28,7 +28,6 @@ save_original_config $file
 
 set_sshd_option $file Protocol 2
 set_sshd_option $file MaxAuthTries 1
-set_sshd_option $file MaxSessions 2
 set_sshd_option $file LoginGraceTime 60
 set_sshd_option $file ClientAliveCountMax 2
 set_sshd_option $file ClientAliveInterval 60
@@ -45,10 +44,14 @@ set_sshd_option $file LogLevel INFO
 
 if grep -qFx $OSVER /opt/farm/ext/secure-sshd/config/nosandbox.conf; then
 	set_sshd_option $file UsePrivilegeSeparation yes
-elif [ "$OSTYPE" != "debian" ] && [ "$OSTYPE" != "netbsd" ]; then
+elif [ "$OSTYPE" != "debian" ] && [ "$OSTYPE" != "redhat" ] && [ "$OSTYPE" != "netbsd" ]; then
 	set_sshd_option $file UsePrivilegeSeparation yes
 else
 	set_sshd_option $file UsePrivilegeSeparation sandbox
+fi
+
+if ! grep -qFx $OSVER /opt/farm/ext/secure-sshd/config/nomaxsessions.conf; then
+	set_sshd_option $file MaxSessions 2
 fi
 
 if [ "$USE_PASSWORD_AUTHENTICATION" = "disable" ]; then
