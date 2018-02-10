@@ -42,16 +42,18 @@ set_sshd_option $file X11Forwarding no
 set_sshd_option $file TCPKeepAlive no
 set_sshd_option $file LogLevel INFO
 
-if grep -qFx $OSVER /opt/farm/ext/secure-sshd/config/nosandbox.conf; then
-	set_sshd_option $file UsePrivilegeSeparation yes
-elif [ "$OSTYPE" != "debian" ] && [ "$OSTYPE" != "redhat" ] && [ "$OSTYPE" != "netbsd" ]; then
-	set_sshd_option $file UsePrivilegeSeparation yes
-else
-	set_sshd_option $file UsePrivilegeSeparation sandbox
-fi
+if [ "$HWTYPE" != "oem" ]; then
+	if grep -qFx $OSVER /opt/farm/ext/secure-sshd/config/nosandbox.conf; then
+		set_sshd_option $file UsePrivilegeSeparation yes
+	elif [ "$OSTYPE" != "debian" ] && [ "$OSTYPE" != "redhat" ] && [ "$OSTYPE" != "netbsd" ]; then
+		set_sshd_option $file UsePrivilegeSeparation yes
+	else
+		set_sshd_option $file UsePrivilegeSeparation sandbox
+	fi
 
-if ! grep -qFx $OSVER /opt/farm/ext/secure-sshd/config/nomaxsessions.conf; then
-	set_sshd_option $file MaxSessions 2
+	if ! grep -qFx $OSVER /opt/farm/ext/secure-sshd/config/nomaxsessions.conf; then
+		set_sshd_option $file MaxSessions 2
+	fi
 fi
 
 if [ "$USE_PASSWORD_AUTHENTICATION" = "disable" ]; then
