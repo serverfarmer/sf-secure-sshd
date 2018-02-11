@@ -20,6 +20,11 @@ set_sshd_option() {
 }
 
 
+if [ "$HWTYPE" = "oem" ]; then
+	echo "skipping secure sshd setup on oem platform"
+	exit 0
+fi
+
 echo "setting up secure sshd configuration"
 chmod 0700 /root/.ssh
 
@@ -42,18 +47,16 @@ set_sshd_option $file X11Forwarding no
 set_sshd_option $file TCPKeepAlive no
 set_sshd_option $file LogLevel INFO
 
-if [ "$HWTYPE" != "oem" ]; then
-	if grep -qFx $OSVER /opt/farm/ext/secure-sshd/config/nosandbox.conf; then
-		set_sshd_option $file UsePrivilegeSeparation yes
-	elif [ "$OSTYPE" != "debian" ] && [ "$OSTYPE" != "redhat" ] && [ "$OSTYPE" != "netbsd" ]; then
-		set_sshd_option $file UsePrivilegeSeparation yes
-	else
-		set_sshd_option $file UsePrivilegeSeparation sandbox
-	fi
+if grep -qFx $OSVER /opt/farm/ext/secure-sshd/config/nosandbox.conf; then
+	set_sshd_option $file UsePrivilegeSeparation yes
+elif [ "$OSTYPE" != "debian" ] && [ "$OSTYPE" != "redhat" ] && [ "$OSTYPE" != "netbsd" ]; then
+	set_sshd_option $file UsePrivilegeSeparation yes
+else
+	set_sshd_option $file UsePrivilegeSeparation sandbox
+fi
 
-	if ! grep -qFx $OSVER /opt/farm/ext/secure-sshd/config/nomaxsessions.conf; then
-		set_sshd_option $file MaxSessions 2
-	fi
+if ! grep -qFx $OSVER /opt/farm/ext/secure-sshd/config/nomaxsessions.conf; then
+	set_sshd_option $file MaxSessions 2
 fi
 
 if [ "$USE_PASSWORD_AUTHENTICATION" = "disable" ]; then
