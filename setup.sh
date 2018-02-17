@@ -49,10 +49,12 @@ set_sshd_option $file LogLevel INFO
 
 if grep -qFx $OSVER /opt/farm/ext/secure-sshd/config/nosandbox.conf; then
 	set_sshd_option $file UsePrivilegeSeparation yes
-elif [ "$OSTYPE" != "debian" ] && [ "$OSTYPE" != "redhat" ] && [ "$OSTYPE" != "netbsd" ]; then
-	set_sshd_option $file UsePrivilegeSeparation yes
-else
-	set_sshd_option $file UsePrivilegeSeparation sandbox
+elif ! grep -qFx $OSVER /opt/farm/ext/secure-sshd/config/noseparation.conf; then
+	if [ "$OSTYPE" != "debian" ] && [ "$OSTYPE" != "redhat" ] && [ "$OSTYPE" != "netbsd" ]; then
+		set_sshd_option $file UsePrivilegeSeparation yes
+	else
+		set_sshd_option $file UsePrivilegeSeparation sandbox
+	fi
 fi
 
 if ! grep -qFx $OSVER /opt/farm/ext/secure-sshd/config/nomaxsessions.conf; then
