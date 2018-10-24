@@ -70,7 +70,9 @@ fi
 
 newmd5=`md5sum $file`
 
-if [ "$oldmd5" != "$newmd5" ]; then
+if [ "$oldmd5" = "$newmd5" ]; then
+	echo "skipping sshd restart, configuration has not changed"
+else
 	case "$OSTYPE" in
 		debian)
 			service ssh reload
