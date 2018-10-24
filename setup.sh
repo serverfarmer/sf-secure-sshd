@@ -29,6 +29,7 @@ echo "setting up secure sshd configuration"
 chmod 0700 /root/.ssh
 
 file="/etc/ssh/sshd_config"
+oldmd5=`md5sum $file`
 save_original_config $file
 
 set_sshd_option $file Protocol 2
@@ -67,16 +68,20 @@ elif [ "$USE_PASSWORD_AUTHENTICATION" = "enable" ]; then
 	set_sshd_option $file PasswordAuthentication yes
 fi
 
-case "$OSTYPE" in
-	debian)
-		service ssh reload
-		;;
-	redhat | suse)
-		service sshd reload
-		;;
-	freebsd | netbsd)
-		/etc/rc.d/sshd restart
-		;;
-	*)
-		;;
-esac
+newmd5=`md5sum $file`
+
+if [ "$oldmd5" != "$newmd5" ]; then
+	case "$OSTYPE" in
+		debian)
+			service ssh reload
+			;;
+		redhat | suse)
+			service sshd reload
+			;;
+		freebsd | netbsd)
+			/etc/rc.d/sshd restart
+			;;
+		*)
+			;;
+	esac
+fi
